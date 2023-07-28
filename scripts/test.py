@@ -1,0 +1,148 @@
+import warnings
+import numpy as np
+from cellpose import io, models
+from cellpose.metrics import _intersection_over_union, _true_positive
+
+
+# warnings.filterwarnings("error")
+
+
+# modify this script to return array of > 0.5? it is complicated because we want to know 'failed' predictions, but we
+# can't exactly match them up. assume IOU array is AxB, Find the highest value in each A row. This would skip the cost
+# matrix, but give a somewhat useful metric. The cost matrix would tell us if the predicted mask was bleeding over into
+# another region. As in we discover IOU[3[1]] = 0.5, so we would have output[3] = 0.5, however we have some false
+# positive as IOU[3[2]] = 0.25, which wouldn't be recorded. perhaps just return the linear sum?
+# def _true_positive(iou, th):
+#     """ true positive at threshold th
+#
+#     Parameters
+#     ------------
+#
+#     iou: float, ND-array
+#         array of IOU pairs
+#     th: float
+#         threshold on IOU for positive label
+#
+#     Returns
+#     ------------
+#
+#     tp: float
+#         number of true positives at threshold
+#
+#     ------------
+#     How it works:
+#         (1) Find minimum number of masks
+#         (2) Define cost matrix; for a given threshold, each element is negative
+#             the higher the IoU is (perfect IoU is 1, worst is 0). The second term
+#             gets more negative with higher IoU, but less negative with greater
+#             n_min (but that's a constant...)
+#         (3) Solve the linear sum assignment problem. The costs array defines the cost
+#             of matching a true label with a predicted label, so the problem is to
+#             find the set of pairings that minimizes this cost. The scipy.optimize
+#             function gives the ordered lists of corresponding true and predicted labels.
+#         (4) Extract the IoUs fro these parings and then threshold to get a boolean array
+#             whose sum is the number of true positives that is returned.
+#
+#     """
+#     n_min = min(iou.shape[0], iou.shape[1])
+#     costs = -(iou >= th).astype(float) - iou / (2 * n_min)
+#     true_ind, pred_ind = linear_sum_assignment(costs)
+#     match_ok = iou[true_ind, pred_ind] >= th
+#     tp = match_ok.sum()
+#     return tp
+def average_precision(masks_true, masks_pred, filename, threshold=[0.5, 0.75, 0.9]):
+    """ average precision estimation: AP = TP / (TP + FP + FN)
+
+    This function is based heavily on the *fast* stardist matching functions
+    (https://github.com/mpicbg-csbd/stardist/blob/master/stardist/matching.py)
+
+    Parameters
+    ------------
+
+    masks_true: list of ND-arrays (int) or ND-array (int)
+        where 0=NO masks; 1,2... are mask labels
+    masks_pred: list of ND-arrays (int) or ND-array (int)
+        ND-array (int) where 0=NO masks; 1,2... are mask labels
+
+    Returns
+    ------------
+
+    ap: array [len(masks_true) x len(threshold)]
+        average precision at thresholds
+    tp: array [len(masks_true) x len(threshold)]
+        number of true positives at thresholds
+    fp: array [len(masks_true) x len(threshold)]
+        number of false positives at thresholds
+    fn: array [len(masks_true) x len(threshold)]
+        number of false negatives at thresholds
+
+    """
+    not_list = False
+    if not isinstance(masks_true, list):
+        masks_true = [masks_true]
+        masks_pred = [masks_pred]
+        not_list = True
+    if not isinstance(threshold, list) and not isinstance(threshold, np.ndarray):
+        threshold = [threshold]
+
+    if len(masks_true) != len(masks_pred):
+        raise ValueError('metrics.average_precision requires len(masks_true)==len(masks_pred)')
+
+    ap = np.zeros((len(masks_true), len(threshold)), np.float32)
+    tp = np.zeros((len(masks_true), len(threshold)), np.float32)
+    fp = np.zeros((len(masks_true), len(threshold)), np.float32)
+    fn = np.zeros((len(masks_true), len(threshold)), np.float32)
+    n_true = np.array(list(map(np.max, masks_true)))
+    n_pred = np.array(list(map(np.max, masks_pred)))
+
+    # n_true[n] = number of true masks in a given image.
+    # mask_true = assigned value of each pixel in image.
+    for n in range(len(masks_true)):
+        # _,mt = np.reshape(np.unique(masks_true[n], return_index=True), masks_pred[n].shape)
+        if n_pred[n] > 0:
+            iou = _intersection_over_union(masks_true[n], masks_pred[n])[1:, 1:]
+            # dr ross wants to see this. basically the IOU matrix of true x pred, and then _truepositive finds the matches.
+            for k, th in enumerate(threshold):
+                tp[n, k] = _true_positive(iou, th)
+        fp[n] = n_pred[n] - tp[n]
+        fn[n] = n_true[n] - tp[n]
+        ap[n] = tp[n] / (tp[n] + fp[n] + fn[n])
+        # try:
+        #     ap[n] = tp[n] / (tp[n] + fp[n] + fn[n])
+        # except RuntimeWarning as e:
+        #     print(f"n:{n}, tp[n]: {tp[n]}, fp[n]: {fp[n]}, fn[n]: {fn[n]}, e: {e}")
+        #     print(tp[n], fp[n], fn[n], e)
+        #     ap[n] = 1
+
+    if not_list:
+        ap, tp, fp, fn = ap[0], tp[0], fp[0], fn[0]
+    return ap, tp, fp, fn
+
+
+def test(test_dir, trained_model, use_GPU, num_images, num_blanks=0):
+    model = models.CellposeModel(gpu=use_GPU, pretrained_model=trained_model)
+    channels = [[0, 0]]
+    diam_labels = model.diam_labels.copy()
+    # get files (during training, test_data is transformed, so we will load it again)
+    output = io.load_train_test_data(test_dir, mask_filter='_seg.npy')
+    test_data, test_labels = output[:2]
+    # run model on test images
+    masks = model.eval(test_data,
+                       channels=channels,
+                       diameter=diam_labels)[0]
+
+    # check performance using ground truth labels
+    ap = average_precision(test_labels, masks, output[2])[0]
+    nans_5 = np.count_nonzero(np.isnan(ap[:, 0]))
+    nans_75 = np.count_nonzero(np.isnan(ap[:, 1]))
+    print(f'{list(zip(output[2], ap[:, 0]))}')
+    # this is super janky, and because I don't want to separate out the 21 blanks.
+    if num_blanks != 0:
+        iou_5 = (np.nanmean(ap[:, 0]) * (num_images - nans_5)) / (num_images - num_blanks)
+        iou_75 = (np.nanmean(ap[:, 1]) * (num_images - nans_75)) / (num_images - num_blanks)
+    else:
+        iou_5 = np.mean(ap[:, 0])
+        iou_75 = np.mean(ap[:, 1])
+    print(
+        f'>>> average precision at iou threshold 0.5 = {iou_5:.3f} with {nans_5} out of {num_blanks} blanks predicted correctly, iou threshold 0.75 = {iou_75:.3f}, with {nans_75} out of {num_blanks} blanks predicted correctly.')
+    return ap
