@@ -10,7 +10,7 @@ from cellpose.metrics import _intersection_over_union, _true_positive
 # modify this script to return array of > 0.5? it is complicated because we want to know 'failed' predictions, but we
 # can't exactly match them up. assume IOU array is AxB, Find the highest value in each A row. This would skip the cost
 # matrix, but give a somewhat useful metric. The cost matrix would tell us if the predicted mask was bleeding over into
-# another region. As in we discover IOU[3[1]] = 0.5, so we would have output[3] = 0.5, however we have some false
+# another region. As in, we discover IOU[3[1]] = 0.5, so we would have output[3] = 0.5, however we have some false
 # positive as IOU[3[2]] = 0.25, which wouldn't be recorded. perhaps just return the linear sum?
 # def _true_positive(iou, th):
 #     """ true positive at threshold th
@@ -119,7 +119,30 @@ def average_precision(masks_true, masks_pred, filename, threshold=[0.5, 0.75, 0.
     return ap, tp, fp, fn
 
 
-def test(test_dir, trained_model, use_GPU, num_images, num_blanks=0):
+def test(test_dir, trained_model, use_GPU):
+    model = models.CellposeModel(gpu=use_GPU, pretrained_model=trained_model)
+    channels = [[0, 0]]
+    diam_labels = model.diam_labels.copy()
+    # get files (during training, test_data is transformed, so we will load it again)
+    output = io.load_train_test_data(test_dir, mask_filter='_seg.npy')
+    test_data, test_labels = output[:2]
+    # run model on test images
+    masks = model.eval(test_data,
+                       channels=channels,
+                       diameter=diam_labels)[0]
+
+    # check performance using ground truth labels
+    ap = average_precision(test_labels, masks, output[2])[0]
+    # IOU for individual images at threshold 0.5, ap[:,1] would be for threshold 0.75. To understand the metrics/conclusion, look at 'average_precision()'.
+    print(f'{list(zip(output[2], ap[:, 0]))}')
+    iou_5 = np.mean(ap[:, 0])
+    iou_75 = np.mean(ap[:, 1])
+    print(
+        f'>>> average precision at iou threshold 0.5 = {iou_5:.3f}, average precision at iou threshold 0.75 = {iou_75:.3f}.')
+    return ap
+
+
+def test_blanks(test_dir, trained_model, use_GPU, num_blanks):
     model = models.CellposeModel(gpu=use_GPU, pretrained_model=trained_model)
     channels = [[0, 0]]
     diam_labels = model.diam_labels.copy()
@@ -134,15 +157,7 @@ def test(test_dir, trained_model, use_GPU, num_images, num_blanks=0):
     # check performance using ground truth labels
     ap = average_precision(test_labels, masks, output[2])[0]
     nans_5 = np.count_nonzero(np.isnan(ap[:, 0]))
-    nans_75 = np.count_nonzero(np.isnan(ap[:, 1]))
     print(f'{list(zip(output[2], ap[:, 0]))}')
-    # this is super janky, and because I don't want to separate out the 21 blanks.
-    if num_blanks != 0:
-        iou_5 = (np.nanmean(ap[:, 0]) * (num_images - nans_5)) / (num_images - num_blanks)
-        iou_75 = (np.nanmean(ap[:, 1]) * (num_images - nans_75)) / (num_images - num_blanks)
-    else:
-        iou_5 = np.mean(ap[:, 0])
-        iou_75 = np.mean(ap[:, 1])
     print(
-        f'>>> average precision at iou threshold 0.5 = {iou_5:.3f} with {nans_5} out of {num_blanks} blanks predicted correctly, iou threshold 0.75 = {iou_75:.3f}, with {nans_75} out of {num_blanks} blanks predicted correctly.')
-    return ap
+        f'>>> {nans_5} out of {num_blanks} blanks predicted correctly. Percent: {nans_5 / num_blanks}')
+    return nans_5 / num_blanks

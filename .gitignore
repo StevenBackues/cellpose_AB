@@ -164,6 +164,5 @@ cython_debug/
 *.png
 *.tar
 *.svg
-*.txt
 data/misc/set_0/unused_TAR_extract/ident1.csv
 data/misc/set_0/unused_TAR_extract/ident1.xlsx
