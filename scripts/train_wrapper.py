@@ -1,5 +1,13 @@
+import logging
+
 from cellpose import io, models
-from scripts.log_wrapper import IOWrapper
+
+logger = logging.getLogger(__name__)
+
+
+# TODO: probably turn this into an actual class to be a true wrapper
+
+
 def train(train_dir, use_GPU, n_epochs, min_train_masks=1, learning_rate=0.1,
           weight_decay=0.0001, pretrained_model=False, model_type=None, test_dir=None, model_name=None, save_path=None,
           nimg_per_epoch=None):
@@ -60,27 +68,25 @@ def train(train_dir, use_GPU, n_epochs, min_train_masks=1, learning_rate=0.1,
 
     # start logger (to see training across epochs)
 
-    #logger = io.logger_setup()
-    io_wrapper = IOWrapper()
-    logger, log_file = io_wrapper.logger_setup(log_directory="./data/log/")
+    # logger = io.logger_setup()
 
     # DEFINE CELLPOSE MODEL (without size model)
     if model_type and pretrained_model:
         model = models.CellposeModel(gpu=use_GPU, model_type=model_type, pretrained_model=pretrained_model)
-        print(f'model type {model_type} and pretrained model {pretrained_model}')
+        logger.info(f'model type {model_type} and pretrained model {pretrained_model}')
     if model_type and not pretrained_model:
         model = models.CellposeModel(gpu=use_GPU, model_type=model_type)
-        print(f'model type {model_type} only')
+        logger.info(f'model type {model_type} only')
     if pretrained_model and not model_type:
         model = models.CellposeModel(gpu=use_GPU, pretrained_model=pretrained_model)
-        print(f'pretrained model {pretrained_model} only')
-
+        logger.info(f'pretrained model {pretrained_model} only')
 
     # set channels
 
     # get files
     output = io.load_train_test_data(train_dir, test_dir, mask_filter='_seg.npy')
     train_data, train_labels, _, test_data, test_labels, _ = output
+    model._train_net()
     model.train(train_data, train_labels,
                 test_data=test_data,
                 test_labels=test_labels,

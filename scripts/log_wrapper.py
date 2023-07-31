@@ -31,3 +31,11 @@ class IOWrapper:
         logger.info(f'WRITING LOG OUTPUT TO {log_file}')
 
         return logger, log_file
+
+
+
+# todo: implement custom log handler to intercept information from training to feed into matplot
+# class CellposeIntercepingHandler(logging.Handler):
+#
+# cellpose_logger = logging.getLogger('__name__ from core.py')
+# cellpose_logger.addHandler('custom handler impopemmntnation')

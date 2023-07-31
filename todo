@@ -8,5 +8,5 @@ monday: get number of masks for each image; wrap logging; det. approp method for
            code segment to get nmasks for each image. This is from models.train
         2. read through core._train_net
            grab epoch, loss, loss_test, lr. (net instance?)
-
+tuesday: implement method to get epoch, loss, loss_test, lr. and -> to
 

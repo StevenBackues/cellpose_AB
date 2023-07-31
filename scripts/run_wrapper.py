@@ -1,9 +1,12 @@
+import logging
 from glob import glob
 from pathlib import Path
 
 from cellpose import models, io
-from natsort import natsorted
 
+logger = logging.getLogger(__name__)
+
+# TODO: probably turn this into an actual class to be a true wrapper
 
 def run(images_directory, model_path, use_GPU):
     images_path = Path(images_directory)

@@ -1,9 +1,15 @@
+import logging
 import warnings
 from pathlib import Path
 
 import numpy as np
 from cellpose import io, models
 from cellpose.metrics import _intersection_over_union, _true_positive
+
+logger = logging.getLogger(__name__)
+
+
+# TODO:probably turn this into an actual class to be a true wrapper
 
 
 # warnings.filterwarnings("error")
@@ -177,3 +183,12 @@ def test_blanks(test_dir, model_path, use_GPU):
     print(
         f'>>> {nans_5} out of {num_img} blanks predicted correctly. Percent: {nans_5 / num_img}')
     return nans_5 / num_img
+
+
+def test_multiple(model_dir, test_dir, use_GPU):
+    path = Path(model_dir)
+    models = path.glob('*')
+    for model in models:
+        if model.is_file():
+            print(str(model))
+            test(test_dir, str(model), use_GPU)
