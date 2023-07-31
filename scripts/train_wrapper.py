@@ -1,20 +1,14 @@
-import gc
-from glob import glob
-from pathlib import Path
-
 from cellpose import io, models
-from natsort import natsorted
-
-
-def train(train_dir, initial_model, use_GPU, n_epochs, min_train_masks=1, learning_rate=0.1,
-          weight_decay=0.0001, test_dir=None, model_name=None, save_path=None, nimg_per_epoch=None):
+from scripts.log_wrapper import IOWrapper
+def train(train_dir, use_GPU, n_epochs, min_train_masks=1, learning_rate=0.1,
+          weight_decay=0.0001, pretrained_model=False, model_type=None, test_dir=None, model_name=None, save_path=None,
+          nimg_per_epoch=None):
     """
     Wrapper for cellpose model.train(), I've pruned this a bit to only relevent params for this paper/experiment.
     :param train_dir: str
                 what directory are training images and *.npy in
 
-    :param initial_model: str
-                either a cellpose general model, such as "CPX" or custom pre-trained model, such as "models/train_set_0/model_1"/
+
 
     :param use_GPU: bool
 
@@ -29,6 +23,13 @@ def train(train_dir, initial_model, use_GPU, n_epochs, min_train_masks=1, learni
 
     :param weight_decay: float (default, 0.00001)
                 From model.train()
+
+    :param pretrained_model: str or list of strings (optional, default False)
+        full path to pretrained cellpose model(s), if None or False, no model loaded
+
+    :param model_type: str (optional, default None)
+        any model that is available in the GUI, use name in GUI e.g. 'livecell'
+        (can be user-trained or model zoo)
 
     :param test_dir: str (default, None)
                 What directory are testing images and *.npy in
@@ -47,9 +48,9 @@ def train(train_dir, initial_model, use_GPU, n_epochs, min_train_masks=1, learni
     """
     channels = [0, 0]
     if save_path is None:
-        save_path = "./models/" + train_dir
+        save_path = "./model/" + train_dir
     # check params
-    run_str = f'python -m cellpose --use_gpu --verbose --train --dir {train_dir} --pretrained_model {initial_model} --chan {channels[0]} --chan2 {channels[1]} --n_epochs {n_epochs} --learning_rate {learning_rate} --weight_decay {weight_decay}'
+    run_str = f'python -m cellpose --use_gpu --verbose --train --dir {train_dir} --pretrained_model {pretrained_model} --model_type {model_type} --chan {channels[0]} --chan2 {channels[1]} --n_epochs {n_epochs} --learning_rate {learning_rate} --weight_decay {weight_decay}'
     if test_dir is not None:
         run_str += f' --test_dir {test_dir}'
     run_str += ' --mask_filter _seg.npy'
@@ -58,11 +59,22 @@ def train(train_dir, initial_model, use_GPU, n_epochs, min_train_masks=1, learni
     # actually start training
 
     # start logger (to see training across epochs)
-    logger = io.logger_setup()
+
+    #logger = io.logger_setup()
+    io_wrapper = IOWrapper()
+    logger, log_file = io_wrapper.logger_setup(log_directory="./data/log/")
 
     # DEFINE CELLPOSE MODEL (without size model)
+    if model_type and pretrained_model:
+        model = models.CellposeModel(gpu=use_GPU, model_type=model_type, pretrained_model=pretrained_model)
+        print(f'model type {model_type} and pretrained model {pretrained_model}')
+    if model_type and not pretrained_model:
+        model = models.CellposeModel(gpu=use_GPU, model_type=model_type)
+        print(f'model type {model_type} only')
+    if pretrained_model and not model_type:
+        model = models.CellposeModel(gpu=use_GPU, pretrained_model=pretrained_model)
+        print(f'pretrained model {pretrained_model} only')
 
-    model = models.CellposeModel(gpu=use_GPU, model_type=initial_model)
 
     # set channels
 

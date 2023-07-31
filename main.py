@@ -8,10 +8,11 @@ from pathlib import Path
 # https://colab.research.google.com/github/MouseLand/cellpose/blob/main/notebooks/run_cellpose_2.ipynb#scrollTo=ldNwr_zxMVha
 
 from cellpose import core
-from scripts.test import test
-from scripts.train import train
+from scripts.test_wrapper import test, test_blanks
+from scripts.train_wrapper import train
 
 
+#probably put this function in the test_wrapper
 def test_multiple(model_dir, test_dir):
     path = Path(model_dir)
     models = path.glob('*')
@@ -46,13 +47,18 @@ dataset ge 1 masks = 78 images
 # replace variables A,B,C and x,y,z with your desired tests.
 # training
 
-print("training model A with x,y,z param, on B image set.")
-train(train_dir=train_set_1_dir, initial_model="CPx", use_GPU=True, n_epochs=100, test_dir=test_set_1_dir)
+# print("training model A with x,y,z param, on B image set.")
+train(train_dir=train_set_1_dir, model_type="CPx", use_GPU=True, n_epochs=100, test_dir=test_set_1_dir)
 
 # test
 
-# print("model A trained with x,y,z param on B image set, testing on C image set")
-# test(train_set_0_dir, train_dir3 + "/models/min_train_1_v2", use_GPU)
+print("model A trained with x,y,z param on B image set, testing on C image set")
+model_path = './models/data/train/set_1/models/cellpose_residual_on_style_on_concatenation_off__2023_07_30_22_34_00.369418'
+#test(test_dir=test_set_0_A_dir,model_path=model_path, use_GPU=True)
+#test(test_dir=test_set_0_B_dir,model_path=model_path, use_GPU=True)
+test_blanks(test_dir=empty_set_0_dir,model_path=model_path, use_GPU=True)
+test_blanks(test_dir=empty_set_1_dir,model_path=model_path, use_GPU=True)
+
 
 # label_me = "data/Confidential_images_for_MIPAR_100_3folders_fullsize_bb/train"
 # run(label_me, train_dir + "/models/honkler", use_GPU)

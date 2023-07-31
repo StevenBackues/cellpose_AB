@@ -1,8 +1,9 @@
-import os
-
 from PIL import Image
-
-
+from pathlib import Path
+'''
+extracts 2 subimages from a paged tiff and saves them as *_subimage_{x}.png. Second part overlays page 1 over page 0 and
+saves as overlay_*.png.
+'''
 def extract_subimages_from_tiff(tiff_path):
     tiff_image = Image.open(tiff_path)
 
@@ -38,9 +39,6 @@ def extract_subimages_from_tiff(tiff_path):
 #     # Save each subimage as a separate file
 #     for i, subimage in enumerate(extracted_subimages):
 #         subimage.save(os.path.join(folder_path, f'{tiff_file}_subimage_{i}.png'))
-
-from PIL import Image
-from pathlib import Path
 
 # Define the paths to the folders
 folder_a_path = Path("./data/subimages_0/")

@@ -1,4 +1,6 @@
 import warnings
+from pathlib import Path
+
 import numpy as np
 from cellpose import io, models
 from cellpose.metrics import _intersection_over_union, _true_positive
@@ -119,12 +121,18 @@ def average_precision(masks_true, masks_pred, filename, threshold=[0.5, 0.75, 0.
     return ap, tp, fp, fn
 
 
-def test(test_dir, trained_model, use_GPU):
-    model = models.CellposeModel(gpu=use_GPU, pretrained_model=trained_model)
+def test(test_dir, model_path, use_GPU):
+    model = models.CellposeModel(gpu=use_GPU, pretrained_model=model_path)
     channels = [[0, 0]]
     diam_labels = model.diam_labels.copy()
     # get files (during training, test_data is transformed, so we will load it again)
     output = io.load_train_test_data(test_dir, mask_filter='_seg.npy')
+
+    model_name = Path(model_path).name
+    test_dir_name = Path(test_dir).name
+    num_img = len(output[2])
+    print(f'>>> testing model "{model_name}" on "{test_dir_name}" dataset containing {num_img} images.')
+
     test_data, test_labels = output[:2]
     # run model on test images
     masks = model.eval(test_data,
@@ -134,7 +142,8 @@ def test(test_dir, trained_model, use_GPU):
     # check performance using ground truth labels
     ap = average_precision(test_labels, masks, output[2])[0]
     # IOU for individual images at threshold 0.5, ap[:,1] would be for threshold 0.75. To understand the metrics/conclusion, look at 'average_precision()'.
-    print(f'{list(zip(output[2], ap[:, 0]))}')
+    print(f'>>> precision at iou threshold 0.5: {list(zip(output[2], ap[:, 0]))}')
+    print(f'>>> precision at iou threshold 0.75: {list(zip(output[2], ap[:, 1]))}')
     iou_5 = np.mean(ap[:, 0])
     iou_75 = np.mean(ap[:, 1])
     print(
@@ -142,12 +151,18 @@ def test(test_dir, trained_model, use_GPU):
     return ap
 
 
-def test_blanks(test_dir, trained_model, use_GPU, num_blanks):
-    model = models.CellposeModel(gpu=use_GPU, pretrained_model=trained_model)
+def test_blanks(test_dir, model_path, use_GPU):
+    model = models.CellposeModel(gpu=use_GPU, pretrained_model=model_path)
     channels = [[0, 0]]
     diam_labels = model.diam_labels.copy()
     # get files (during training, test_data is transformed, so we will load it again)
     output = io.load_train_test_data(test_dir, mask_filter='_seg.npy')
+
+    model_name = Path(model_path).name
+    test_dir_name = Path(test_dir).name
+    num_img = len(output[2])
+    print(f'>>> testing model "{model_name}" on "{test_dir_name}" dataset containing {num_img} images.')
+
     test_data, test_labels = output[:2]
     # run model on test images
     masks = model.eval(test_data,
@@ -157,7 +172,8 @@ def test_blanks(test_dir, trained_model, use_GPU, num_blanks):
     # check performance using ground truth labels
     ap = average_precision(test_labels, masks, output[2])[0]
     nans_5 = np.count_nonzero(np.isnan(ap[:, 0]))
+
     print(f'{list(zip(output[2], ap[:, 0]))}')
     print(
-        f'>>> {nans_5} out of {num_blanks} blanks predicted correctly. Percent: {nans_5 / num_blanks}')
-    return nans_5 / num_blanks
+        f'>>> {nans_5} out of {num_img} blanks predicted correctly. Percent: {nans_5 / num_img}')
+    return nans_5 / num_img

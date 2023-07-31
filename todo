@@ -1,2 +1,12 @@
 todo:
-friday: organize data, upload to github, remember to include `ls -R`
+friday: organize data; upload to github; upload to mediafire
+saturday: more organization
+monday: get number of masks for each image; wrap logging; det. approp method for getting epoch, loss, loss_test and lr.
+        1. use this
+            `nmasks = np.array([label[0].max() for label in train_flows])
+            nremove = (nmasks < min_train_masks).sum()`
+           code segment to get nmasks for each image. This is from models.train
+        2. read through core._train_net
+           grab epoch, loss, loss_test, lr. (net instance?)
+
+
