@@ -1,12 +1,22 @@
 todo:
 friday: organize data; upload to github; upload to mediafire
 saturday: more organization
-monday: get number of masks for each image; wrap logging; det. approp method for getting epoch, loss, loss_test and lr.
-        1. use this
-            `nmasks = np.array([label[0].max() for label in train_flows])
-            nremove = (nmasks < min_train_masks).sum()`
-           code segment to get nmasks for each image. This is from models.train
+monday: wrap logging; det. approp method for getting epoch, loss, loss_test and lr.
+
+
         2. read through core._train_net
            grab epoch, loss, loss_test, lr. (net instance?)
-tuesday: implement method to get epoch, loss, loss_test, lr. and -> to
+tuesday: implement method to get epoch, loss, loss_test, lr.
+
+wed: mess around with matplotlib to make a pretty graph of training results.
+thur: get number of maks for each image;
+        1. use this
+        `nmasks = np.array([label[0].max() for label in train_flows])
+         nremove = (nmasks < min_train_masks).sum()`
+        code segment to get nmasks for each image. This is from models.train
+
+
+week 1.5: finalize program and run basic tests. class obligation
+week 1.5 to 2: actual paper tests, and paper
+week 2: 
 

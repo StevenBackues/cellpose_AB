@@ -11,11 +11,11 @@ from cellpose import core
 
 from scripts.log_wrapper import IOWrapper
 from scripts.test_wrapper import test, test_blanks
-from scripts.train_wrapper import train
-
+from scripts.train_wrapper import train, get_masks
+from pathlib import Path
 
 io_wrapper = IOWrapper()
-logger, log_file = io_wrapper.logger_setup(log_directory="./data/log/")
+logger, log_file, log_handler = io_wrapper.logger_setup(log_directory="./data/log/")
 
 # check if you have GPU on, see thread if using pycharm
 # https://stackoverflow.com/questions/59652992/pycharm-debugging-using-docker-with-gpus
@@ -24,15 +24,15 @@ yn = ['NO', 'YES']
 logger.info(f'>>> GPU activated? {yn[use_GPU]}')
 
 # train dirs
-train_set_0_dir = 'data/train/set_0/'  # 78 IMAGES
-train_set_1_dir = 'data/train/set_1/'  # 115 IMAGES
+train_set_0_dir = Path('data/train/set_0/')  # 78 IMAGES
+train_set_1_dir = Path('data/train/set_1/')  # 115 IMAGES
 # test dirs
-test_set_0_A_dir = 'data/test/test_8_set_0_A/'  # 8 IMAGES
-test_set_0_B_dir = 'data/test/test_8_set_0_B/'  # 8 IMAGES
-test_set_1_dir = 'data/test/test_34_set_1/'  # 34 IMAGES
+test_set_0_A_dir = Path('data/test/test_8_set_0_A/')  # 8 IMAGES
+test_set_0_B_dir = Path('data/test/test_8_set_0_B/')  # 8 IMAGES
+test_set_1_dir = Path('data/test/test_34_set_1/')  # 34 IMAGES
 # empty dirs
-empty_set_0_dir = 'data/test/empty_set_0/'  # 21 IMAGES
-empty_set_1_dir = 'data/test/empty_set_1/'  # 12 IMAGES
+empty_set_0_dir = Path('data/test/empty_set_0/')  # 21 IMAGES
+empty_set_1_dir = Path('data/test/empty_set_1/')  # 12 IMAGES
 
 """
 dataset = 99 images
@@ -43,16 +43,17 @@ dataset ge 1 masks = 78 images
 # training
 
 # print("training model A with x,y,z param, on B image set.")
-train(train_dir=train_set_1_dir, model_type="CPx", use_GPU=True, n_epochs=100, test_dir=test_set_1_dir)
-
+# model = train(train_dir=test_set_1_dir, model_type="CPx", use_GPU=True, n_epochs=10, test_dir=test_set_1_dir)
+# model_path = io_wrapper.get_model_path(log_handler.logs)
+# io_wrapper.plot_training_stats(io_wrapper.get_training_stats(log_handler.logs), model_name=model_path.name)
 # test
-
+nmasks = get_masks(train_set_0_dir, True)
+print(nmasks)
 print("model A trained with x,y,z param on B image set, testing on C image set")
-model_path = './models/data/train/set_1/models/cellpose_residual_on_style_on_concatenation_off__2023_07_30_22_34_00.369418'
 # test(test_dir=test_set_0_A_dir,model_path=model_path, use_GPU=True)
 # test(test_dir=test_set_0_B_dir,model_path=model_path, use_GPU=True)
-test_blanks(test_dir=empty_set_0_dir, model_path=model_path, use_GPU=True)
-test_blanks(test_dir=empty_set_1_dir, model_path=model_path, use_GPU=True)
+# test_blanks(test_dir=empty_set_0_dir, model_path=model_path, use_GPU=True)
+# test_blanks(test_dir=empty_set_1_dir, model_path=model_path, use_GPU=True)
 
 # label_me = "data/Confidential_images_for_MIPAR_100_3folders_fullsize_bb/train"
 # run(label_me, train_dir + "/models/honkler", use_GPU)
