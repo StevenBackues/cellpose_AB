@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 # TODO:probably turn this into an actual class to be a true wrapper
+# TODO: probably merge with train_wrapper.py as models_wrapper.py?
 
 
 # warnings.filterwarnings("error")
@@ -128,16 +129,16 @@ def average_precision(masks_true, masks_pred, filename, threshold=[0.5, 0.75, 0.
 
 
 def test(test_dir, model_path, use_GPU):
-    model = models.CellposeModel(gpu=use_GPU, pretrained_model=model_path)
+    model = models.CellposeModel(gpu=use_GPU, pretrained_model=str(model_path))
     channels = [[0, 0]]
     diam_labels = model.diam_labels.copy()
     # get files (during training, test_data is transformed, so we will load it again)
-    output = io.load_train_test_data(test_dir, mask_filter='_seg.npy')
+    output = io.load_train_test_data(str(test_dir), mask_filter='_seg.npy')
 
     model_name = Path(model_path).name
     test_dir_name = Path(test_dir).name
     num_img = len(output[2])
-    print(f'>>> testing model "{model_name}" on "{test_dir_name}" dataset containing {num_img} images.')
+    logger.info(f'>>> testing model "{model_name}" on "{test_dir_name}" dataset containing {num_img} images.')
 
     test_data, test_labels = output[:2]
     # run model on test images
@@ -148,26 +149,26 @@ def test(test_dir, model_path, use_GPU):
     # check performance using ground truth labels
     ap = average_precision(test_labels, masks, output[2])[0]
     # IOU for individual images at threshold 0.5, ap[:,1] would be for threshold 0.75. To understand the metrics/conclusion, look at 'average_precision()'.
-    print(f'>>> precision at iou threshold 0.5: {list(zip(output[2], ap[:, 0]))}')
-    print(f'>>> precision at iou threshold 0.75: {list(zip(output[2], ap[:, 1]))}')
+    logger.info(f'>>> precision at iou threshold 0.5: {list(zip(output[2], ap[:, 0]))}')
+    logger.info(f'>>> precision at iou threshold 0.75: {list(zip(output[2], ap[:, 1]))}')
     iou_5 = np.mean(ap[:, 0])
     iou_75 = np.mean(ap[:, 1])
-    print(
+    logger.info(
         f'>>> average precision at iou threshold 0.5 = {iou_5:.3f}, average precision at iou threshold 0.75 = {iou_75:.3f}.')
     return ap
 
 
 def test_blanks(test_dir, model_path, use_GPU):
-    model = models.CellposeModel(gpu=use_GPU, pretrained_model=model_path)
+    model = models.CellposeModel(gpu=use_GPU, pretrained_model=str(model_path))
     channels = [[0, 0]]
     diam_labels = model.diam_labels.copy()
     # get files (during training, test_data is transformed, so we will load it again)
-    output = io.load_train_test_data(test_dir, mask_filter='_seg.npy')
+    output = io.load_train_test_data(str(test_dir), mask_filter='_seg.npy')
 
     model_name = Path(model_path).name
     test_dir_name = Path(test_dir).name
     num_img = len(output[2])
-    print(f'>>> testing model "{model_name}" on "{test_dir_name}" dataset containing {num_img} images.')
+    logger.info(f'>>> testing model "{model_name}" on "{test_dir_name}" dataset containing {num_img} images.')
 
     test_data, test_labels = output[:2]
     # run model on test images
@@ -179,8 +180,8 @@ def test_blanks(test_dir, model_path, use_GPU):
     ap = average_precision(test_labels, masks, output[2])[0]
     nans_5 = np.count_nonzero(np.isnan(ap[:, 0]))
 
-    print(f'{list(zip(output[2], ap[:, 0]))}')
-    print(
+    logger.info(f'{list(zip(output[2], ap[:, 0]))}')
+    logger.info(
         f'>>> {nans_5} out of {num_img} blanks predicted correctly. Percent: {nans_5 / num_img}')
     return nans_5 / num_img
 

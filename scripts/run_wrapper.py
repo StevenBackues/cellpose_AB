@@ -7,6 +7,7 @@ from cellpose import models, io
 logger = logging.getLogger(__name__)
 
 # TODO: probably turn this into an actual class to be a true wrapper
+# TODO: probably create a models_wrapper.py and move this there.
 
 def run(images_directory, model_path, use_GPU):
     images_path = Path(images_directory)

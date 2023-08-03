@@ -1,13 +1,14 @@
 import logging
+from pathlib import Path
 
 from cellpose import io, models, dynamics
-from pathlib import Path
 import numpy as np
 
 logger = logging.getLogger(__name__)
 
 
 # TODO: probably turn this into an actual class to be a true wrapper
+# TODO: maybe move train and test into one models_wrapper.py?
 
 
 def train(train_dir, use_GPU, n_epochs, min_train_masks=1, learning_rate=0.1,
@@ -58,7 +59,7 @@ def train(train_dir, use_GPU, n_epochs, min_train_masks=1, learning_rate=0.1,
     """
     channels = [0, 0]
     if save_path is None:
-        save_path = 'model' / train_dir
+        save_path = Path('data/model/' + train_dir.name)
     # check params
     run_str = f'python -m cellpose --use_gpu --verbose --train --dir {train_dir} --pretrained_model {pretrained_model} --model_type {model_type} --chan {channels[0]} --chan2 {channels[1]} --n_epochs {n_epochs} --learning_rate {learning_rate} --weight_decay {weight_decay}'
     if test_dir is not None:

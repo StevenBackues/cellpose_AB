@@ -72,8 +72,9 @@ class IOWrapper:
         return training_stats
 
     def plot_training_stats(self, stats, model_name):
+        #todo: make a permanent record of this training data. use pandas to store actual data. see google doc"
         # piece of garbage
-        path = Path("./fig", model_name)
+        path = Path("./data/fig", model_name)
         path.mkdir(exist_ok=True, parents=True)
 
         epochs = [entry[0] for entry in stats]
@@ -89,8 +90,8 @@ class IOWrapper:
         plt.title('Loss over Epoch')
         plt.legend()
         plt.grid(True)
-        plt.show()
         plt.savefig(path / "/loss_over_epoch.png")
+        plt.show()
         # loss
         plt.plot(epochs, loss_test, label='Loss Test')
         plt.xlabel('Epoch')
@@ -98,9 +99,8 @@ class IOWrapper:
         plt.title('Loss Test over Epoch')
         plt.legend()
         plt.grid(True)
+        plt.savefig(path / "loss_test_over_epoch.png")
         plt.show()
-        plt.savefig(path/ "loss_test_over_epoch.png")
-
         # both on same graph
         plt.plot(epochs, loss_test, label='Loss Test', color='blue')
         plt.plot(epochs, loss, label='Loss', color='red')
@@ -109,9 +109,8 @@ class IOWrapper:
         plt.title('Loss and Loss Test over Epoch')
         plt.legend()
         plt.grid(True)
+        plt.savefig(path / "loss_and_loss_test_over_epoch.png")
         plt.show()
-        plt.savefig(path/ "loss_and_loss_test_over_epoch.png")
-
         # learning rate over epoch
         plt.plot(epochs, learning_rate, label='Learning Rate')
         plt.xlabel('Epoch')
@@ -119,8 +118,8 @@ class IOWrapper:
         plt.title('Learning Rate over Epoch')
         plt.legend()
         plt.grid(True)
-        plt.show()
         plt.savefig(path / "learning_rate_over_epoch.png")
+        plt.show()
         # time over epoch
         plt.plot(epochs, time, label='Time')
         plt.xlabel('Epoch')
@@ -128,8 +127,8 @@ class IOWrapper:
         plt.title('Time (Cumulative) over Epoch')
         plt.legend()
         plt.grid(True)
+        plt.savefig(path / "time_over_epoch.png")
         plt.show()
-        plt.savefig(path/ "time_over_epoch.png")
 
     def get_model_path(self, logs):
         pattern = r'saving network parameters to (\S+)'
