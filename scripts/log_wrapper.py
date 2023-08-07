@@ -5,6 +5,7 @@
 
 import logging
 import sys
+from datetime import datetime
 from pathlib import Path
 import re
 import matplotlib.pyplot as plt
@@ -28,7 +29,8 @@ class IOWrapper:
             cp_dir = Path(log_directory)
 
         cp_dir.mkdir(exist_ok=True)
-        log_file = cp_dir.joinpath('run.log')
+        current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        log_file = cp_dir.joinpath(current_time + '.log')
         try:
             log_file.unlink()
         except:
@@ -72,7 +74,7 @@ class IOWrapper:
         return training_stats
 
     def plot_training_stats(self, stats, model_name):
-        #todo: make a permanent record of this training data. use pandas to store actual data. see google doc"
+        # todo: make a permanent record of this training data. use pandas to store actual data. see google doc"
         # piece of garbage
         path = Path("./data/fig", model_name)
         path.mkdir(exist_ok=True, parents=True)

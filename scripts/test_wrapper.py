@@ -149,12 +149,12 @@ def test(test_dir, model_path, use_GPU):
     # check performance using ground truth labels
     ap = average_precision(test_labels, masks, output[2])[0]
     # IOU for individual images at threshold 0.5, ap[:,1] would be for threshold 0.75. To understand the metrics/conclusion, look at 'average_precision()'.
-    logger.info(f'>>> precision at iou threshold 0.5: {list(zip(output[2], ap[:, 0]))}')
+    logger.info(f'>>> precision at iou threshold 0.50: {list(zip(output[2], ap[:, 0]))}')
     logger.info(f'>>> precision at iou threshold 0.75: {list(zip(output[2], ap[:, 1]))}')
-    iou_5 = np.mean(ap[:, 0])
+    iou_50 = np.mean(ap[:, 0])
     iou_75 = np.mean(ap[:, 1])
     logger.info(
-        f'>>> average precision at iou threshold 0.5 = {iou_5:.3f}, average precision at iou threshold 0.75 = {iou_75:.3f}.')
+        f'>>> average precision at iou threshold 0.50 = {iou_50:.3f}, average precision at iou threshold 0.75 = {iou_75:.3f}.')
     return ap
 
 
@@ -178,12 +178,12 @@ def test_blanks(test_dir, model_path, use_GPU):
 
     # check performance using ground truth labels
     ap = average_precision(test_labels, masks, output[2])[0]
-    nans_5 = np.count_nonzero(np.isnan(ap[:, 0]))
+    nans_50 = np.count_nonzero(np.isnan(ap[:, 0]))
 
     logger.info(f'{list(zip(output[2], ap[:, 0]))}')
     logger.info(
-        f'>>> {nans_5} out of {num_img} blanks predicted correctly. Percent: {nans_5 / num_img}')
-    return nans_5 / num_img
+        f'>>> {nans_50} out of {num_img} blanks predicted correctly. Percent: {nans_50 / num_img}')
+    return nans_50 / num_img
 
 
 def test_multiple(model_dir, test_dir, use_GPU):
