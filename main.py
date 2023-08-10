@@ -37,6 +37,12 @@ test_set_full_dir = Path('data/test/test_50_set_full/')  # 50 IMAGES
 empty_set_0_dir = Path('data/test/empty_set_0/')  # 21 IMAGES
 empty_set_1_dir = Path('data/test/empty_set_1/')  # 12 IMAGES
 
+# final train dirs, balanced somewhat around having an increase of 350 ROI per set
+t_0 = Path('data/train/t_0/')  # 44 (8 from train_set_0_B, 8 from train_set_0_2B,28 from train_set_1)
+t_1 = Path('data/train/t_1/')  # 88 (same pattern)
+t_2 = Path('data/train/t_2/')  # 132 (same pattern)
+t_3 = Path('data/train/t_3/')  # 177 (28 from train_set_0_B, 34 from train_set_0_2B, 115 from train_set_1)
+
 """
 dataset = 99 images
 dataset ge 5 masks = 62 images
@@ -45,15 +51,25 @@ dataset ge 1 masks = 78 images
 # replace variables A,B,C and x,y,z with your desired tests.
 # training
 
-model = train(train_dir=train_set_full_dir, model_type="CPx", use_GPU=True, n_epochs=300, test_dir=test_set_full_dir)
-model_path = io_wrapper.get_model_path(log_handler.logs)
-io_wrapper.plot_training_stats(io_wrapper.get_training_stats(log_handler.logs), model_name=model_path.name)
+# training_list = [t_0, t_1, t_2, t_3]
+# for train_dir in training_list:
+#     model = train(train_dir=train_dir, model_type="CPx", use_GPU=True, n_epochs=1000, test_dir=test_set_full_dir)
+#     model_path = io_wrapper.get_model_path(log_handler.logs)
+#     io_wrapper.plot_training_stats(io_wrapper.get_training_stats(log_handler.logs), model_name=model_path.name)
+#     del model, model_path
+
+# model = train(train_dir=t_3, model_type="CPx", use_GPU=True, n_epochs=1000, test_dir=test_set_full_dir)
+# model_path = io_wrapper.get_model_path(log_handler.logs)
+# io_wrapper.plot_training_stats(io_wrapper.get_training_stats(log_handler.logs), model_name=model_path.name)
 # test
-test(test_dir=test_set_0_B_dir, model_path=model_path, use_GPU=True)
-test(test_dir=test_set_0_2B_dir, model_path=model_path, use_GPU=True)
-test(test_dir=test_set_1_dir, model_path=model_path, use_GPU=True)
-test_blanks(test_dir=empty_set_0_dir, model_path=model_path, use_GPU=True)
-test_blanks(test_dir=empty_set_1_dir, model_path=model_path, use_GPU=True)
+model_gutter = Path('./data/model/gutter/t_3')
+models = sorted(list(model_gutter.glob('*')), key=lambda path: path.stat().st_mtime)
+for model_path in models:
+    test(test_dir=test_set_0_B_dir, model_path=model_path, use_GPU=True)
+    test(test_dir=test_set_0_2B_dir, model_path=model_path, use_GPU=True)
+    test(test_dir=test_set_1_dir, model_path=model_path, use_GPU=True)
+    test_blanks(test_dir=empty_set_0_dir, model_path=model_path, use_GPU=True)
+    test_blanks(test_dir=empty_set_1_dir, model_path=model_path, use_GPU=True)
 
 # label_me = label_test_dir
 # run(label_me, model_oath, use_GPU)

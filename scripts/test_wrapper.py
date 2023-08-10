@@ -1,3 +1,4 @@
+import csv
 import logging
 import warnings
 from pathlib import Path
@@ -147,15 +148,36 @@ def test(test_dir, model_path, use_GPU):
                        diameter=diam_labels)[0]
 
     # check performance using ground truth labels
-    ap = average_precision(test_labels, masks, output[2])[0]
+    ap, tp, fp, fn = average_precision(test_labels, masks, output[2])
     # IOU for individual images at threshold 0.5, ap[:,1] would be for threshold 0.75. To understand the metrics/conclusion, look at 'average_precision()'.
     logger.info(f'>>> precision at iou threshold 0.50: {list(zip(output[2], ap[:, 0]))}')
     logger.info(f'>>> precision at iou threshold 0.75: {list(zip(output[2], ap[:, 1]))}')
     iou_50 = np.mean(ap[:, 0])
     iou_75 = np.mean(ap[:, 1])
+    row_names = ["NAME", "threshold 0.50", "threshold 0.75", "threshold 0.90"]
+    stats = [list(row) for row in zip(output[2], ap[:, 0], ap[:, 1], ap[:, 2])]
+    write_csv(stats, model_name, test_dir_name + '_AP_stats', row_names)
+
+    # optionally we could get tp, fp, fn? e.g:
+    row_names = ["NAME", "AP T 0.50", "TP T 0.50", "FP T 0.50", "FN T 0.50"]
+    stats = [list(row) for row in zip(output[2], ap[:, 0], tp[:, 0], fp[:, 0], fn[:, 0])]
+    write_csv(stats, model_name, test_dir_name + '_050_stats', row_names)
+
     logger.info(
         f'>>> average precision at iou threshold 0.50 = {iou_50:.3f}, average precision at iou threshold 0.75 = {iou_75:.3f}.')
-    return ap
+
+    return stats
+
+
+def write_csv(stats, model_name, test_name, row_names):
+    # todo: combine this with the one from log_wrapper. trying to get this out the door, but in the future someone should rewrite this.
+    path = Path("./data/fig", model_name)
+    path.mkdir(parents=True, exist_ok=True)
+    csv_file = path / Path(test_name + ".csv")
+    with open(csv_file, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(row_names)
+        writer.writerows(stats)
 
 
 def test_blanks(test_dir, model_path, use_GPU):
@@ -179,7 +201,9 @@ def test_blanks(test_dir, model_path, use_GPU):
     # check performance using ground truth labels
     ap = average_precision(test_labels, masks, output[2])[0]
     nans_50 = np.count_nonzero(np.isnan(ap[:, 0]))
-
+    row_names = ["NAME", "BOOL"]
+    stats = [list(row) for row in zip(output[2], np.isnan(ap[:, 0]))]
+    write_csv(stats, model_name, test_dir_name + '_stats', row_names)
     logger.info(f'{list(zip(output[2], ap[:, 0]))}')
     logger.info(
         f'>>> {nans_50} out of {num_img} blanks predicted correctly. Percent: {nans_50 / num_img}')

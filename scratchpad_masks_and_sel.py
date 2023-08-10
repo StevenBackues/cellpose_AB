@@ -15,7 +15,9 @@ def write_list_to_csv(data_list, filename):
         writer.writerows(data_list)
 
 
-def create_strata(data_list):
+import random
+
+def create_strata(data_list, num_samples):
     # Step 1: Identify distinct values for stratification
     distinct_strata = list(set(item[1] for item in data_list))
     # Step 2: Divide data_list into sublists based on stratification
@@ -24,16 +26,20 @@ def create_strata(data_list):
         stratified_data[item[1]].append(item)
     # Step 3: Randomly select samples from each stratum
     stratified_sample = []
-    sample_size_per_stratum = 8 // len(distinct_strata)  # Adjust as needed
+    sample_size_per_stratum = num_samples // len(distinct_strata)  # Adjust as needed
     for stratum, data_subset in stratified_data.items():
         if len(data_subset) >= sample_size_per_stratum:
-            stratified_sample.extend(random.sample(data_subset, sample_size_per_stratum))
+            sampled_items = random.sample(data_subset, sample_size_per_stratum)
+            stratified_sample.extend(sampled_items)
+            data_subset = [item for item in data_subset if item not in sampled_items]
         else:
             stratified_sample.extend(data_subset)
     # If necessary, randomly select additional samples to meet the desired sample size
-    remaining_samples = 8 - len(stratified_sample)
-    stratified_sample.extend(random.sample(data_list, remaining_samples))
+    remaining_samples = num_samples - len(stratified_sample)
+    available_data = [item for item in data_list if item not in stratified_sample]
+    stratified_sample.extend(random.sample(available_data, remaining_samples))
     return stratified_sample
+
 
 
 def move_samples(stratified_sample, target_dir):
@@ -68,14 +74,19 @@ test_set_1_dir = Path('data/test/test_34_set_1/')  # 34 IMAGES
 empty_set_0_dir = Path('data/test/empty_set_0/')  # 21 IMAGES
 empty_set_1_dir = Path('data/test/empty_set_1/')  # 12 IMAGES
 
+# final testing sets
+t_0 = Path('data/train/t_0/')
+t_1 = Path('data/train/t_1/')
+t_2 = Path('data/train/t_2/')
+
 list_of_dirs = [train_set_0_2B_dir, train_set_0_B_dir, train_set_1_dir, test_set_0_2B_dir, test_set_0_B_dir,
                 test_set_1_dir, empty_set_0_dir, empty_set_1_dir]
 
-for dir in list_of_dirs:
-    nmasks = get_masks(dir, True)
-    logger.info(nmasks)
-    csv_filename = dir.name + ".csv"
-    write_list_to_csv(nmasks, "data/mask/" + csv_filename)
+# for dir in list_of_dirs:
+#     nmasks = get_masks(dir, True)
+#     logger.info(nmasks)
+#     csv_filename = dir.name + ".csv"
+#     write_list_to_csv(nmasks, "data/mask/" + csv_filename)
 
 # basic sample set creation. ideally you would stratify your samples.
 # nmasks = get_masks(train_set_0_B_dir, True)
@@ -89,14 +100,32 @@ for dir in list_of_dirs:
 
 # strata example, could use scikit. DO NOT UNCOMMENT move_samples unless you want to move samples!
 
-# nmasks = get_masks(train_set_0_B_dir, True)
-# logger.info(f'nmasks in {train_set_0_B_dir}: {nmasks}')
-# stratified_sample = create_strata(nmasks)
-# logger.info(f'stratified sample of {train_set_0_B_dir}: {stratified_sample}')
-# # move_samples(stratified_sample, test_set_0_B_dir)
-#
 # nmasks = get_masks(train_set_0_2B_dir, True)
 # logger.info(f'nmasks in {train_set_0_2B_dir}: {nmasks}')
 # stratified_sample = create_strata(nmasks)
 # logger.info(f'stratified sample of {train_set_0_2B_dir}: {stratified_sample}')
 # # move_samples(stratified_sample, test_set_0_2B_dir)
+def the_pinnacle_of_repetition(directory):
+    nmasks = get_masks(train_set_0_B_dir, True)
+    logger.info(f'nmasks in {train_set_0_B_dir}: {nmasks}')
+    stratified_sample = create_strata(nmasks, 8)
+    logger.info(f'stratified sample of {train_set_0_B_dir}: {stratified_sample}')
+    move_samples(stratified_sample, directory)
+
+    nmasks = get_masks(train_set_0_2B_dir, True)
+    logger.info(f'nmasks in {train_set_0_2B_dir}: {nmasks}')
+    stratified_sample = create_strata(nmasks, 8)
+    logger.info(f'stratified sample of {train_set_0_2B_dir}: {stratified_sample}')
+    move_samples(stratified_sample, directory )
+
+    nmasks = get_masks(train_set_1_dir, True)
+    logger.info(f'nmasks in {train_set_1_dir}: {nmasks}')
+    stratified_sample = create_strata(nmasks, 28)
+    logger.info(f'stratified sample of {train_set_1_dir}: {stratified_sample}')
+    move_samples(stratified_sample, directory)
+
+the_pinnacle_of_repetition(t_0)
+the_pinnacle_of_repetition(t_1)
+the_pinnacle_of_repetition(t_2)
+#
+

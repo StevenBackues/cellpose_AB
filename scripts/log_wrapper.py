@@ -1,5 +1,5 @@
 # log_wrapper.py
-
+import csv
 # this is bad practice, but since I can't/don't want to override the original cellpose functions, this is how I will get
 # some of the statistics.
 
@@ -74,7 +74,7 @@ class IOWrapper:
         return training_stats
 
     def plot_training_stats(self, stats, model_name):
-        # todo: make a permanent record of this training data. use pandas to store actual data. see google doc"
+        # todo: make a permanent record of this training data. use to store actual data. see google doc"
         # piece of garbage
         path = Path("./data/fig", model_name)
         path.mkdir(exist_ok=True, parents=True)
@@ -84,6 +84,18 @@ class IOWrapper:
         loss = [entry[2] for entry in stats]
         loss_test = [entry[3] for entry in stats]
         learning_rate = [entry[4] for entry in stats]
+        # Create a list of lists with all the data
+        data = list(zip(epochs, time, loss, loss_test, learning_rate))
+
+        # Output as CSV
+        csv_file = path / "data.csv"
+
+        with open(csv_file, 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(["epoch", "time", "loss", "loss_test", "learning rate"])
+            writer.writerows(data)
+
+        print(f"CSV data has been written to {csv_file}")
 
         # loss over epoch
         plt.plot(epochs, loss, label='Loss')
@@ -131,6 +143,8 @@ class IOWrapper:
         plt.grid(True)
         plt.savefig(path / "time_over_epoch.png")
         plt.show()
+
+
 
     def get_model_path(self, logs):
         pattern = r'saving network parameters to (\S+)'
