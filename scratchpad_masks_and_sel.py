@@ -8,14 +8,19 @@ from cellpose import core
 from scripts.log_wrapper import IOWrapper
 from scripts.train_wrapper import get_masks
 
+"""
+Has stuff for two main processes.
+1. reads images and associated npy file from an image set to get # of masks per image, outputs this a csv with format [(str)name, (float)mask]
+2. creates a stratified sample set from an image set (based on # of masks), and moves these samples from the main image set.
+2 (alt). I also included a random sample set creation option, but I would use stratified based on # of masks.
+"""
+
+
 
 def write_list_to_csv(data_list, filename):
     with open(filename, mode='w', newline='') as file:
         writer = csv.writer(file)
         writer.writerows(data_list)
-
-
-import random
 
 def create_strata(data_list, num_samples):
     # Step 1: Identify distinct values for stratification
@@ -39,8 +44,6 @@ def create_strata(data_list, num_samples):
     available_data = [item for item in data_list if item not in stratified_sample]
     stratified_sample.extend(random.sample(available_data, remaining_samples))
     return stratified_sample
-
-
 
 def move_samples(stratified_sample, target_dir):
     for path, _ in stratified_sample:
@@ -78,15 +81,15 @@ empty_set_1_dir = Path('data/test/empty_set_1/')  # 12 IMAGES
 t_0 = Path('data/train/t_0/')
 t_1 = Path('data/train/t_1/')
 t_2 = Path('data/train/t_2/')
+t_3 = Path('data/train/t_3')
 
-list_of_dirs = [train_set_0_2B_dir, train_set_0_B_dir, train_set_1_dir, test_set_0_2B_dir, test_set_0_B_dir,
-                test_set_1_dir, empty_set_0_dir, empty_set_1_dir]
+list_of_dirs = [t_0, t_1, t_2,t_3]
 
-# for dir in list_of_dirs:
-#     nmasks = get_masks(dir, True)
-#     logger.info(nmasks)
-#     csv_filename = dir.name + ".csv"
-#     write_list_to_csv(nmasks, "data/mask/" + csv_filename)
+for dir in list_of_dirs:
+    nmasks = get_masks(dir, True)
+    logger.info(nmasks)
+    csv_filename = dir.name + ".csv"
+    write_list_to_csv(nmasks, "data/mask/" + csv_filename)
 
 # basic sample set creation. ideally you would stratify your samples.
 # nmasks = get_masks(train_set_0_B_dir, True)
@@ -105,27 +108,27 @@ list_of_dirs = [train_set_0_2B_dir, train_set_0_B_dir, train_set_1_dir, test_set
 # stratified_sample = create_strata(nmasks)
 # logger.info(f'stratified sample of {train_set_0_2B_dir}: {stratified_sample}')
 # # move_samples(stratified_sample, test_set_0_2B_dir)
-def the_pinnacle_of_repetition(directory):
-    nmasks = get_masks(train_set_0_B_dir, True)
-    logger.info(f'nmasks in {train_set_0_B_dir}: {nmasks}')
-    stratified_sample = create_strata(nmasks, 8)
-    logger.info(f'stratified sample of {train_set_0_B_dir}: {stratified_sample}')
-    move_samples(stratified_sample, directory)
-
-    nmasks = get_masks(train_set_0_2B_dir, True)
-    logger.info(f'nmasks in {train_set_0_2B_dir}: {nmasks}')
-    stratified_sample = create_strata(nmasks, 8)
-    logger.info(f'stratified sample of {train_set_0_2B_dir}: {stratified_sample}')
-    move_samples(stratified_sample, directory )
-
-    nmasks = get_masks(train_set_1_dir, True)
-    logger.info(f'nmasks in {train_set_1_dir}: {nmasks}')
-    stratified_sample = create_strata(nmasks, 28)
-    logger.info(f'stratified sample of {train_set_1_dir}: {stratified_sample}')
-    move_samples(stratified_sample, directory)
-
-the_pinnacle_of_repetition(t_0)
-the_pinnacle_of_repetition(t_1)
-the_pinnacle_of_repetition(t_2)
+# def the_pinnacle_of_repetition(directory):
+#     nmasks = get_masks(train_set_0_B_dir, True)
+#     logger.info(f'nmasks in {train_set_0_B_dir}: {nmasks}')
+#     stratified_sample = create_strata(nmasks, 8)
+#     logger.info(f'stratified sample of {train_set_0_B_dir}: {stratified_sample}')
+#     move_samples(stratified_sample, directory)
+#
+#     nmasks = get_masks(train_set_0_2B_dir, True)
+#     logger.info(f'nmasks in {train_set_0_2B_dir}: {nmasks}')
+#     stratified_sample = create_strata(nmasks, 8)
+#     logger.info(f'stratified sample of {train_set_0_2B_dir}: {stratified_sample}')
+#     move_samples(stratified_sample, directory )
+#
+#     nmasks = get_masks(train_set_1_dir, True)
+#     logger.info(f'nmasks in {train_set_1_dir}: {nmasks}')
+#     stratified_sample = create_strata(nmasks, 28)
+#     logger.info(f'stratified sample of {train_set_1_dir}: {stratified_sample}')
+#     move_samples(stratified_sample, directory)
+#
+# the_pinnacle_of_repetition(t_0)
+# the_pinnacle_of_repetition(t_1)
+# the_pinnacle_of_repetition(t_2)
 #
 

@@ -6,13 +6,13 @@ from cellpose import models, io
 
 logger = logging.getLogger(__name__)
 
+
 # TODO: probably turn this into an actual class to be a true wrapper
 # TODO: probably create a models_wrapper.py and move this there.
 
 def run(images_directory, model_path, use_GPU):
-    images_path = Path(images_directory)
     model = models.CellposeModel(gpu=use_GPU, pretrained_model=model_path)
-    images = io.get_image_files(images_directory, "")
+    images = io.get_image_files(str(images_directory), "")
     channels = [0, 0]
     diam_labels = model.diam_labels.copy()
     for filename in images:

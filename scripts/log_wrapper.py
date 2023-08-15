@@ -74,7 +74,7 @@ class IOWrapper:
         return training_stats
 
     def plot_training_stats(self, stats, model_name):
-        # todo: make a permanent record of this training data. use to store actual data. see google doc"
+        # todo: dear lord where do i start with what is wrong with this.
         # piece of garbage
         path = Path("./data/fig", model_name)
         path.mkdir(exist_ok=True, parents=True)
