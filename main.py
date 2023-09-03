@@ -11,11 +11,9 @@ from cellpose import core
 
 from scripts.log_wrapper import IOWrapper
 from scripts.run_wrapper import run
-from scripts.test_wrapper import test, test_blanks
+from scripts.test_wrapper import test, test_blanks, test_existing
 from scripts.train_wrapper import train
 from pathlib import Path
-
-
 
 ## step 1: set up logging and check GPU
 io_wrapper = IOWrapper()
@@ -73,6 +71,15 @@ Uncomment the section you want to work with. More information is in "scripts/*_w
 ## 2> testing a set of models on several different tests
 # model_gutter = Path('./data/model/gutter/t_3')
 # models = sorted(list(model_gutter.glob('*')), key=lambda path: path.stat().st_mtime)
+model_t0 = Path(
+    'data/model/gutter/t_0/cellpose_residual_on_style_on_concatenation_off_t_0_2023_08_08_19_46_32.613015_epoch_201')
+model_t2 = Path(
+    'data/model/gutter/t_2/cellpose_residual_on_style_on_concatenation_off_t_2_2023_08_08_20_57_59.141163_epoch_201')
+
+models = [model_t0, model_t2]
+test_dir = Path('data/test/final_10')
+for model_path in models:
+    test(test_dir=test_dir, model_path=model_path, use_GPU=True)
 # for model_path in models:
 #     test(test_dir=test_set_0_B_dir, model_path=model_path, use_GPU=True)
 #     test(test_dir=test_set_0_2B_dir, model_path=model_path, use_GPU=True)
@@ -84,7 +91,18 @@ Uncomment the section you want to work with. More information is in "scripts/*_w
 # model_path= 'data/model/gutter/t_0/cellpose_residual_on_style_on_concatenation_off_t_0_2023_08_08_19_46_32.613015_epoch_201'
 # label_me = Path('data/label/label_test')
 # run(label_me, model_path, use_GPU)
-# test_multiple(models_dir)
 
 
-#todo: find where area of mask is (measure size) and use to output number of ROI and size of each ROI, or output to IMAGEJ. cellpose clearly has this function but I need to go find it.
+## example of testing pre-existing images:
+## given test_dir and truth_dir, where test_dir = CELLPOSE COMPATIBLE LABELED IMAGES, truth_dir = CELLPOSE COMPATIBLE GROUND TRUTH LABELED IMAGES
+# truth_dir = Path('insert_path')
+# test_dir = Path('instert_path')
+# test_existing(truth_dir=truth_dir, test_dir=test_dir)
+## you can expand this using an iterator
+## given test_dirs = LIST OF test_dir
+# test_dirs = [test_dir1, test_dir2, ...]
+# for test_dir in test_dirs:
+#     test_existing(truth_dir=truth_dir, test_dir=test_dir)
+
+
+# todo: find where area of mask is (measure size) and use to output number of ROI and size of each ROI, or output to IMAGEJ. cellpose clearly has this function but I need to go find it.

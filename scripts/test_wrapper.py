@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 # TODO:probably turn this into an actual class to be a true wrapper
 # TODO: probably merge with train_wrapper.py as models_wrapper.py?
-
+# TODO: (important) compare existing data to existing data see dr. backus
 
 # warnings.filterwarnings("error")
 
@@ -180,6 +180,37 @@ def write_csv(stats, model_name, test_name, row_names):
         writer.writerows(stats)
 
 
+def test_existing(truth_dir, test_dir):
+    """
+
+    :param path truth_dir: where the ground truth images are located
+    :param path test_dir: where the images we want to test are located
+    :return: statistics about AP, a csv is also generated, but not explicitly as a return statement
+    """
+    truth_output = io.load_train_test_data(str(truth_dir), mask_filter='_seg.npy')
+    test_output = io.load_train_test_data(str(truth_dir), mask_filter='_seg.npy')
+    truth_dir_name = Path(truth_dir).name
+    test_dir_name = Path(test_dir).name
+    if len(truth_output[2]) == len(test_output[2]):
+        logger.info(
+            f'>>> comparing truth dir {truth_dir_name} and test dir {test_dir_name} dataset containing {len(truth_output[2])} images.')
+        truth_data, truth_labels = test_output[:2]
+        test_data, test_labels = test_output[:2]
+        ap, tp, fp, fn = average_precision(truth_labels, test_labels, test_output[2])
+        row_names = ["NAME", "threshold 0.50", "threshold 0.75", "threshold 0.90"]
+        stats = [list(row) for row in zip(test_dir_name[2], ap[:, 0], ap[:, 1], ap[:, 2])]
+        # i know this doesn't follow the write_csv parameters with test/truth taking place of model/test, but it works.
+        write_csv(stats, test_dir_name, truth_dir_name + '_AP_stats', row_names)
+        iou_50 = np.mean(ap[:, 0])
+        iou_75 = np.mean(ap[:, 1])
+        logger.info(
+            f'>>> average precision at iou threshold 0.50 = {iou_50:.3f}, average precision at iou threshold 0.75 = {iou_75:.3f}.')
+        return stats
+    else:
+        logger.error(
+            f'>>> truth dir {truth_dir_name} and test dir {test_dir_name} do not have the same number of image, _seg.npy pairs. Aborting compare.')
+
+
 def test_blanks(test_dir, model_path, use_GPU):
     model = models.CellposeModel(gpu=use_GPU, pretrained_model=str(model_path))
     channels = [[0, 0]]
@@ -210,7 +241,7 @@ def test_blanks(test_dir, model_path, use_GPU):
     return nans_50 / num_img
 
 
-def test_multiple(model_dir, test_dir, use_GPU):
+def test_multiple(test_dir, model_dir, use_GPU):
     path = Path(model_dir)
     models = path.glob('*')
     for model in models:
