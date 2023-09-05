@@ -71,15 +71,15 @@ Uncomment the section you want to work with. More information is in "scripts/*_w
 ## 2> testing a set of models on several different tests
 # model_gutter = Path('./data/model/gutter/t_3')
 # models = sorted(list(model_gutter.glob('*')), key=lambda path: path.stat().st_mtime)
-model_t0 = Path(
-    'data/model/gutter/t_0/cellpose_residual_on_style_on_concatenation_off_t_0_2023_08_08_19_46_32.613015_epoch_201')
-model_t2 = Path(
-    'data/model/gutter/t_2/cellpose_residual_on_style_on_concatenation_off_t_2_2023_08_08_20_57_59.141163_epoch_201')
-
-models = [model_t0, model_t2]
-test_dir = Path('data/test/final_10')
-for model_path in models:
-    test(test_dir=test_dir, model_path=model_path, use_GPU=True)
+# model_t0 = Path(
+#     'data/model/gutter/t_0/cellpose_residual_on_style_on_concatenation_off_t_0_2023_08_08_19_46_32.613015_epoch_201')
+# model_t2 = Path(
+#     'data/model/gutter/t_2/cellpose_residual_on_style_on_concatenation_off_t_2_2023_08_08_20_57_59.141163_epoch_201')
+#
+# models = [model_t0, model_t2]
+# test_dir = Path('data/test/final_10')
+# for model_path in models:
+#     test(test_dir=test_dir, model_path=model_path, use_GPU=True)
 # for model_path in models:
 #     test(test_dir=test_set_0_B_dir, model_path=model_path, use_GPU=True)
 #     test(test_dir=test_set_0_2B_dir, model_path=model_path, use_GPU=True)
@@ -103,6 +103,10 @@ for model_path in models:
 # test_dirs = [test_dir1, test_dir2, ...]
 # for test_dir in test_dirs:
 #     test_existing(truth_dir=truth_dir, test_dir=test_dir)
-
+truth_dir = Path('data/Refs_labeled/')
+test_dir = Path('data/human_comparisons/')
+test_dirs = [sub_dir for sub_dir in test_dir.iterdir() if sub_dir.is_dir()]
+for sub_dir in test_dirs:
+    test_existing(truth_dir, sub_dir)
 
 # todo: find where area of mask is (measure size) and use to output number of ROI and size of each ROI, or output to IMAGEJ. cellpose clearly has this function but I need to go find it.

@@ -188,13 +188,13 @@ def test_existing(truth_dir, test_dir):
     :return: statistics about AP, a csv is also generated, but not explicitly as a return statement
     """
     truth_output = io.load_train_test_data(str(truth_dir), mask_filter='_seg.npy')
-    test_output = io.load_train_test_data(str(truth_dir), mask_filter='_seg.npy')
+    test_output = io.load_train_test_data(str(test_dir), mask_filter='_seg.npy')
     truth_dir_name = Path(truth_dir).name
     test_dir_name = Path(test_dir).name
     if len(truth_output[2]) == len(test_output[2]):
         logger.info(
             f'>>> comparing truth dir {truth_dir_name} and test dir {test_dir_name} dataset containing {len(truth_output[2])} images.')
-        truth_data, truth_labels = test_output[:2]
+        truth_data, truth_labels = truth_output[:2]
         test_data, test_labels = test_output[:2]
         ap, tp, fp, fn = average_precision(truth_labels, test_labels, test_output[2])
         row_names = ["NAME", "threshold 0.50", "threshold 0.75", "threshold 0.90"]
