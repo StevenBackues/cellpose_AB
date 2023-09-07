@@ -198,8 +198,8 @@ def test_existing(truth_dir, test_dir):
         test_data, test_labels = test_output[:2]
         ap, tp, fp, fn = average_precision(truth_labels, test_labels, test_output[2])
         row_names = ["NAME", "threshold 0.50", "threshold 0.75", "threshold 0.90"]
-        stats = [list(row) for row in zip(test_dir_name[2], ap[:, 0], ap[:, 1], ap[:, 2])]
         # i know this doesn't follow the write_csv parameters with test/truth taking place of model/test, but it works.
+        stats = [list(row) for row in zip(test_output[2], ap[:, 0], ap[:, 1], ap[:, 2])]
         write_csv(stats, test_dir_name, truth_dir_name + '_AP_stats', row_names)
         iou_50 = np.mean(ap[:, 0])
         iou_75 = np.mean(ap[:, 1])
