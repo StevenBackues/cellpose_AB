@@ -10,6 +10,7 @@
 from cellpose import core
 
 from scripts.log_wrapper import IOWrapper
+from scripts.measure_wrapper import measure_apbs
 from scripts.run_wrapper import run
 from scripts.test_wrapper import test, test_blanks, test_existing
 from scripts.train_wrapper import train
@@ -93,20 +94,24 @@ Uncomment the section you want to work with. More information is in "scripts/*_w
 # run(label_me, model_path, use_GPU)
 
 
-## example of testing pre-existing images:
-## given test_dir and truth_dir, where test_dir = CELLPOSE COMPATIBLE LABELED IMAGES, truth_dir = CELLPOSE COMPATIBLE GROUND TRUTH LABELED IMAGES
-# truth_dir = Path('insert_path')
-# test_dir = Path('instert_path')
-# test_existing(truth_dir=truth_dir, test_dir=test_dir)
-## you can expand this using an iterator
-## given test_dirs = LIST OF test_dir
-# test_dirs = [test_dir1, test_dir2, ...]
-# for test_dir in test_dirs:
-#     test_existing(truth_dir=truth_dir, test_dir=test_dir)
-truth_dir = Path('data/Refs_labeled/')
-test_dir = Path('data/human_comparisons/')
-test_dirs = [sub_dir for sub_dir in test_dir.iterdir() if sub_dir.is_dir()]
-for sub_dir in test_dirs:
-    test_existing(truth_dir, sub_dir)
+# ## example of testing pre-existing images:
+# ## given test_dir and truth_dir, where test_dir = CELLPOSE COMPATIBLE LABELED IMAGES, truth_dir = CELLPOSE COMPATIBLE GROUND TRUTH LABELED IMAGES
+# # truth_dir = Path('insert_path')
+# # test_dir = Path('instert_path')
+# # test_existing(truth_dir=truth_dir, test_dir=test_dir)
+# ## you can expand this using an iterator
+# ## given test_dirs = LIST OF test_dir
+# # test_dirs = [test_dir1, test_dir2, ...]
+# # for test_dir in test_dirs:
+# #     test_existing(truth_dir=truth_dir, test_dir=test_dir)
+# truth_dir = Path('data/Refs_labeled/')
+# test_dir = Path('data/human_comparisons/')
+# test_dirs = [sub_dir for sub_dir in test_dir.iterdir() if sub_dir.is_dir()]
+# for sub_dir in test_dirs:
+#     test_existing(truth_dir, sub_dir)
 
-# todo: find where area of mask is (measure size) and use to output number of ROI and size of each ROI, or output to IMAGEJ. cellpose clearly has this function but I need to go find it.
+# Runs code written by Jonathan Backues for measuring the size and number of identified APBs from a TIF or PNG image where each APB is labeled with a different number mask (such as can be output by Cellpose)
+# Code is in measure_wrapper.py
+# Directory containing mask images to be measured.
+measure_dir_path = Path('data/measure/')
+measure_apbs(dir_path=measure_dir_path)
