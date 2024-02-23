@@ -52,6 +52,8 @@ some options here:
 1> train a model, or a set of models
 2> test a model or a set of models on a single or multiple tests
 3> label an image set with a specific model
+4> test prexisting masks against a ground truth
+5> measure the size of bodies in cellpose masks
 Uncomment the section you want to work with. More information is in "scripts/*_wrapper.py"
 """
 
@@ -94,7 +96,7 @@ Uncomment the section you want to work with. More information is in "scripts/*_w
 # run(label_me, model_path, use_GPU)
 
 
-# ## example of testing pre-existing images:
+# 4> example of testing pre-existing images:
 # ## given test_dir and truth_dir, where test_dir = CELLPOSE COMPATIBLE LABELED IMAGES, truth_dir = CELLPOSE COMPATIBLE GROUND TRUTH LABELED IMAGES
 # # truth_dir = Path('insert_path')
 # # test_dir = Path('instert_path')
@@ -110,8 +112,7 @@ Uncomment the section you want to work with. More information is in "scripts/*_w
 # for sub_dir in test_dirs:
 #     test_existing(truth_dir, sub_dir)
 
-# Runs code written by Jonathan Backues for measuring the size and number of identified APBs from a TIF or PNG image where each APB is labeled with a different number mask (such as can be output by Cellpose)
+#>5 Runs code for measuring the size and number of identified APBs from a TIF or PNG image.
+# where each APB is labeled with a different number mask (such as can be output by Cellpose)
 # Code is in measure_wrapper.py
-# Directory containing mask images to be measured.
-measure_dir_path = Path('data/measure/')
-measure_apbs(dir_path=measure_dir_path)
+measure_apbs()
