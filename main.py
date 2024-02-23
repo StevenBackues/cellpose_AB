@@ -1,11 +1,21 @@
-# If you need to contact me in the future just send a request on github. (emarron)
+
+# For questions about this code, contact us on Github (emarron or StevenBackues)
 # I'm running this using the cellpose v2 docker container
 # https://hub.docker.com/layers/biocontainers/cellpose/2.1.1_cv2/images/sha256-cfe36943a49590da85c64bb8006330397193de2732faad06f41260296e35978c?context=explore
 # cellpose - 2.1.1_cv2
 
-
 # basic parameters taken from cellpose collab page
 # https://colab.research.google.com/github/MouseLand/cellpose/blob/main/notebooks/run_cellpose_2.ipynb#scrollTo=ldNwr_zxMVha
+
+"""
+some options here:
+1> train a model, or a set of models
+2> test a model or a set of models on a single or multiple tests
+3> label an image set with a specific model
+4> test prexisting masks against a ground truth
+5> measure the size of bodies in cellpose masks
+Uncomment the section you want to work with. More information is in "scripts/*_wrapper.py"
+"""
 
 from cellpose import core
 
@@ -28,32 +38,25 @@ logger.info(f'>>> GPU activated? {yn[use_GPU]}')
 
 ## step 2: add all relevent directory paths.
 
-# train dirs
-train_set_0_2B_dir = Path('data/train/set_0_2B/')  # 28 IMAGES
-train_set_0_B_dir = Path('data/train/set_0_B/')  # 34 IMAGES
-train_set_1_dir = Path('data/train/set_1/')  # 115 IMAGES
-train_set_full_dir = Path('data/train/set_full')  # 177 IMAGES
-# test dirs
-test_set_0_2B_dir = Path('data/test/test_8_set_0_2B/')  # 8 IMAGES
-test_set_0_B_dir = Path('data/test/test_8_set_0_B/')  # 8 IMAGES
-test_set_1_dir = Path('data/test/test_34_set_1/')  # 35 IMAGES
-test_set_full_dir = Path('data/test/test_50_set_full/')  # 51 IMAGES
-# empty dirs
-empty_set_0_dir = Path('data/test/empty_set_0/')  # 21 IMAGES
-empty_set_1_dir = Path('data/test/empty_set_1/')  # 12 IMAGES
-# final train dirs, balanced somewhat around having an increase of 350 ROI per set
-t_0 = Path('data/train/t_0/')  # 44 (8 from train_set_0_B, 8 from train_set_0_2B,28 from train_set_1)
-t_1 = Path('data/train/t_1/')  # 88 (same pattern)
-t_2 = Path('data/train/t_2/')  # 132 (same pattern)
-t_3 = Path('data/train/t_3/')  # 177 (28 from train_set_0_B, 34 from train_set_0_2B, 115 from train_set_1)
+# # train dirs
+# train_set_0_2B_dir = Path('data/train/set_0_2B/')  # 28 IMAGES
+# train_set_0_B_dir = Path('data/train/set_0_B/')  # 34 IMAGES
+# train_set_1_dir = Path('data/train/set_1/')  # 115 IMAGES
+# train_set_full_dir = Path('data/train/set_full')  # 177 IMAGES
+# # test dirs
+# test_set_0_2B_dir = Path('data/test/test_8_set_0_2B/')  # 8 IMAGES
+# test_set_0_B_dir = Path('data/test/test_8_set_0_B/')  # 8 IMAGES
+# test_set_1_dir = Path('data/test/test_34_set_1/')  # 35 IMAGES
+# test_set_full_dir = Path('data/test/test_50_set_full/')  # 51 IMAGES
+# # empty dirs
+# empty_set_0_dir = Path('data/test/empty_set_0/')  # 21 IMAGES
+# empty_set_1_dir = Path('data/test/empty_set_1/')  # 12 IMAGES
+# # final train dirs, balanced somewhat around having an increase of 350 ROI per set
+# t_0 = Path('data/train/t_0/')  # 44 (8 from train_set_0_B, 8 from train_set_0_2B,28 from train_set_1)
+# t_1 = Path('data/train/t_1/')  # 88 (same pattern)
+# t_2 = Path('data/train/t_2/')  # 132 (same pattern)
+# t_3 = Path('data/train/t_3/')  # 177 (28 from train_set_0_B, 34 from train_set_0_2B, 115 from train_set_1)
 
-"""
-some options here:
-1> train a model, or a set of models
-2> test a model or a set of models on a single or multiple tests
-3> label an image set with a specific model
-Uncomment the section you want to work with. More information is in "scripts/*_wrapper.py"
-"""
 
 ## 1> training a set of models
 # training_list = [t_0, t_1, t_2]
@@ -94,7 +97,7 @@ Uncomment the section you want to work with. More information is in "scripts/*_w
 # run(label_me, model_path, use_GPU)
 
 
-# ## example of testing pre-existing images:
+# 4> example of testing pre-existing images:
 # ## given test_dir and truth_dir, where test_dir = CELLPOSE COMPATIBLE LABELED IMAGES, truth_dir = CELLPOSE COMPATIBLE GROUND TRUTH LABELED IMAGES
 # # truth_dir = Path('insert_path')
 # # test_dir = Path('instert_path')
@@ -110,8 +113,10 @@ Uncomment the section you want to work with. More information is in "scripts/*_w
 # for sub_dir in test_dirs:
 #     test_existing(truth_dir, sub_dir)
 
-# Runs code written by Jonathan Backues for measuring the size and number of identified APBs from a TIF or PNG image where each APB is labeled with a different number mask (such as can be output by Cellpose)
+#>5 Runs code for measuring the size and number of identified APBs from a TIF or PNG image.
+# where each APB is labeled with a different number mask (such as can be output by Cellpose)
 # Code is in measure_wrapper.py
-# Directory containing mask images to be measured.
-measure_dir_path = Path('data/measure/')
-measure_apbs(dir_path=measure_dir_path)
+# Set the path of the folder with the masks here
+dir_path = Path('data/measure/')
+measure_apbs(dir_path)
+

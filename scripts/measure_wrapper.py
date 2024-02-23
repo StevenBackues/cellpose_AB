@@ -1,10 +1,18 @@
 def measure_apbs(dir_path):
+    # >5 Code to test the size of APBs labeled by Cellpose, as described in Marron et al. Autophagy 2024
+    # "Accurate Automated Segmentation of Autophagic Bodies in Yeast Vacuoles Using Cellpose 2.0"
+
     import os
     import numpy as np
-    import skimage
+    from skimage import io, measure
     import csv
+    from pathlib import Path
+
+    # # directory containing mask images
+    # dir_path = Path('data/measure/')
 
     # Conversion factor: 1 px = 2.16 nm, so 1 px^2 = 2.16^2 nm^2
+    # This is for images with a magnification of 30,000x
     conversion_factor = (2.16 ** 2)
 
     # Minimum blob area threshold (in nm^2)
@@ -20,16 +28,16 @@ def measure_apbs(dir_path):
         with open(bodies_csv_filename, 'w', newline='') as bodies_csvfile:
             bodies_writer = csv.writer(bodies_csvfile)
 
-            # List all PNG files in the directory
+            # List all PNG or TIFF files in the directory
             mask_files = [f for f in os.listdir(dir_path) if f.endswith('.png') or f.endswith('.tif')]
 
             for mask_file in mask_files:
                 # Load mask image
                 mask_path = os.path.join(dir_path, mask_file)
-                mask = skimage.io.imread(mask_path, as_gray=True)  # Load as grayscale
+                mask = io.imread(mask_path, as_gray=True)  # Load as grayscale
 
                 # Perform image segmentation
-                labeled_mask, num_labels = skimage.measure.label(mask, connectivity=2, return_num=True)
+                labeled_mask, num_labels = measure.label(mask, connectivity=2, return_num=True)
 
                 # Count blobs and calculate area
                 unique_labels = np.unique(labeled_mask)
