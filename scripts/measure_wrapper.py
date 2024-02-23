@@ -1,4 +1,4 @@
-def measure_apbs():
+def measure_apbs(dir_path):
     # >5 Code to test the size of APBs labeled by Cellpose, as described in Marron et al. Autophagy 2024
     # "Accurate Automated Segmentation of Autophagic Bodies in Yeast Vacuoles Using Cellpose 2.0"
 
@@ -8,8 +8,8 @@ def measure_apbs():
     import csv
     from pathlib import Path
 
-    # Prompt the user for the directory containing mask images
-    dir_path = Path('data/measure/')
+    # # directory containing mask images
+    # dir_path = Path('data/measure/')
 
     # Conversion factor: 1 px = 2.16 nm, so 1 px^2 = 2.16^2 nm^2
     # This is for images with a magnification of 30,000x
