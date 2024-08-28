@@ -1,5 +1,4 @@
 
-# For questions about this code, contact us on Github (emarron or StevenBackues)
 # I'm running this using the cellpose v2 docker container
 # https://hub.docker.com/layers/biocontainers/cellpose/2.1.1_cv2/images/sha256-cfe36943a49590da85c64bb8006330397193de2732faad06f41260296e35978c?context=explore
 # cellpose - 2.1.1_cv2
