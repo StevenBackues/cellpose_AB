@@ -2,6 +2,7 @@
 # I'm running this using the cellpose v2 docker container
 # https://hub.docker.com/layers/biocontainers/cellpose/2.1.1_cv2/images/sha256-cfe36943a49590da85c64bb8006330397193de2732faad06f41260296e35978c?context=explore
 # cellpose - 2.1.1_cv2
+# Note that this does not work with Cellpose 3, which appears not to have support for custom models.  
 
 # basic parameters taken from cellpose collab page
 # https://colab.research.google.com/github/MouseLand/cellpose/blob/main/notebooks/run_cellpose_2.ipynb#scrollTo=ldNwr_zxMVha
