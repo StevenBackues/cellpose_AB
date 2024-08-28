@@ -115,7 +115,7 @@ logger.info(f'>>> GPU activated? {yn[use_GPU]}')
 
 #>5 Runs code for measuring the size and number of identified APBs from a TIF or PNG image.
 # where each APB is labeled with a different number mask (such as can be output by Cellpose)
-# Code is in measure_wrapper.py
+# Code is in measure_wrapper.py. Be sure to set the scale to match your actual images or your measurements will be wrong.  
 # Set the path of the folder with the masks here
 dir_path = Path('data/measure/')
 measure_apbs(dir_path)
